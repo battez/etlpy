@@ -7,7 +7,14 @@
 #
 # 
 # Require some standard libraries:
-import os, sys
+import os
+
+# ensure we are in the right directory context, and then return to original at end. 
+previous_dir = os.getcwd()
+os.chdir('U:\Documents\Bus Int')
+
+directory = "W3SVC1"
+field_string = "#Fields"
 
 line_sep = "-" * 40
 print(" ")
@@ -15,8 +22,6 @@ print(line_sep)
 print('PROCESSING, PLEASE WAIT....')
 print(line_sep)
 
-directory = "W3SVC1"
-field_string = "#Fields"
 
 field_line_types = []
 
@@ -55,7 +60,7 @@ for kind in set_field_line_types:
 # initialise output files, with fields as headers:
 FPREFIX = 'serverlog'
 EXT = '.log'
-OUTDIR = 'flatfiles/' 
+OUTDIR = 'flatfiles\\' 
 
 for idx, header in enumerate(headers):
     
@@ -63,7 +68,7 @@ for idx, header in enumerate(headers):
     with open(OUTDIR + FPREFIX + str(len(header)) + EXT, "wt") as file:
         # join and output to file
         header_string = ' '.join(header)
-        file.write(header_string)
+        file.write(header_string + "\n")
 
 
     file.close()
@@ -84,7 +89,7 @@ for root, dirs, files in os.walk(directory):
 
                 # initialise this var to tell us when to save a line to output:
                 capture_data = False
-        
+
                 for line in text:
 
                     # turn on data capture whenever we find a header line
@@ -92,18 +97,34 @@ for root, dirs, files in os.walk(directory):
                         capture_data = True
 
                         # set which output file we will write to:
-                        if line == orig_headers['14']:
-                            outfile = outfile14
-                        else:
-                            outfile = outfile18
+                        # if line == orig_headers['14']:
+                        
+                        #     outfile = outfile14
+                        # elif len(line.split()) == 18:
+                        #     outfile = outfile18
+                        
 
                     elif line[0] == "#":
                         # just discard comments, reset capturing of data
                         capture_data = False
 
                     elif (line[0:2] == "20") and capture_data:
-                        total_rows +=1
-                        outfile.write(line)
+
+                        # run a check for field number in line:
+                        # set which output file we will write to:
+                        if len(line.split()) == 14:
+                            outfile = outfile14
+                            total_rows +=1
+                            outfile.write(line)
+
+                        elif len(line.split()) == 18:
+                            outfile = outfile18
+                            total_rows +=1
+                            outfile.write(line)
+                        else:
+                            continue # discard line
+                        
+                        
 
                 text.close
 
@@ -119,7 +140,7 @@ print 'total rows=',total_rows
 print(line_sep)
 print(line_sep)
 
-
+os.chdir(previous_dir)
                 
 
 
